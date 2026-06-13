@@ -1,0 +1,12 @@
+retail_margin_resilience:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: retail_admin
+      password: retail_password
+      port: 5432
+      dbname: retail_margin_resilience
+      schema: staging
+      threads: 4

@@ -1,0 +1,39 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment
+.env
+.env.*
+
+# Logs and temporary outputs
+*.log
+project_structure_audit.txt
+
+# Data outputs
+data/raw/*.csv
+data/processed/*
+data/exports/*
+*.parquet
+
+# Keep Streamlit deployment inputs
+!data/processed/ml_margin_risk_scoring_features.csv
+!data/processed/ml_margin_risk_predictions_explained.csv
+
+# MLflow outputs
+mlruns/
+
+# dbt
+dbt_retail/target/
+dbt_retail/logs/
+dbt_retail/dbt_packages/
+
+# Power BI temp/cache
+*.pbit.tmp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

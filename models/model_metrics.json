@@ -1,0 +1,64 @@
+{
+    "best_model": "logistic_regression",
+    "business_objective": "early_warning_detection_of_next_year_high_margin_risk",
+    "selection_logic": "Maximize recall with acceptable precision; use ROC-AUC and F1 as secondary metrics.",
+    "min_acceptable_precision": 0.55,
+    "target_column": "high_margin_risk_next_year",
+    "split_strategy": "train_2023_test_2024",
+    "model_results": {
+        "logistic_regression": {
+            "decision_threshold": 0.3931930313295524,
+            "accuracy": 0.7972222222222223,
+            "precision": 0.577639751552795,
+            "recall": 0.9489795918367347,
+            "f1": 0.7181467181467182,
+            "roc_auc": 0.9457470010905125,
+            "confusion_matrix": [
+                [
+                    194,
+                    68
+                ],
+                [
+                    5,
+                    93
+                ]
+            ]
+        },
+        "random_forest": {
+            "decision_threshold": 0.20385331089457162,
+            "accuracy": 0.7916666666666666,
+            "precision": 0.5851851851851851,
+            "recall": 0.8061224489795918,
+            "f1": 0.6781115879828327,
+            "roc_auc": 0.9096042997351612,
+            "confusion_matrix": [
+                [
+                    206,
+                    56
+                ],
+                [
+                    19,
+                    79
+                ]
+            ]
+        },
+        "gradient_boosting": {
+            "decision_threshold": 0.6320148126925298,
+            "accuracy": 0.8916666666666667,
+            "precision": 0.927536231884058,
+            "recall": 0.6530612244897959,
+            "f1": 0.7664670658682635,
+            "roc_auc": 0.8065703380588877,
+            "confusion_matrix": [
+                [
+                    257,
+                    5
+                ],
+                [
+                    34,
+                    64
+                ]
+            ]
+        }
+    }
+}

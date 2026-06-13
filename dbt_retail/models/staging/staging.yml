@@ -1,0 +1,416 @@
+version: 2
+
+models:
+  - name: stg_calendar
+    description: "Cleaned calendar dimension with fiscal year, fiscal week, and fiscal quarter logic."
+    columns:
+      - name: date_id
+        tests:
+          - not_null
+          - unique
+      - name: calendar_date
+        tests:
+          - not_null
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+      - name: fiscal_week
+        tests:
+          - not_null
+      - name: fiscal_quarter
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+  - name: stg_stores
+    description: "Cleaned store dimension with region, format, size band, fulfillment flag, and risk profile."
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+          - unique
+      - name: region
+        tests:
+          - not_null
+      - name: store_format
+        tests:
+          - not_null
+      - name: risk_profile
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+      - name: fulfillment_enabled
+        tests:
+          - not_null
+
+  - name: stg_products
+    description: "Cleaned product dimension with category, subcategory, price, cost, margin, return risk, and shrink risk."
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+      - name: category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Apparel & Accessories'
+                  - 'Beauty'
+                  - 'Household Essentials'
+                  - 'Food & Beverage'
+                  - 'Home Furnishings & Decor'
+                  - 'Hardlines'
+      - name: unit_price
+        tests:
+          - not_null
+      - name: unit_cost
+        tests:
+          - not_null
+      - name: margin_rate
+        tests:
+          - not_null
+      - name: return_risk_level
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+      - name: shrink_risk_level
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+
+  - name: stg_suppliers
+    description: "Cleaned supplier dimension with region, average lead time, reliability score, and delay risk."
+    columns:
+      - name: supplier_id
+        tests:
+          - not_null
+          - unique
+      - name: supplier_region
+        tests:
+          - not_null
+      - name: average_lead_time_days
+        tests:
+          - not_null
+      - name: reliability_score
+        tests:
+          - not_null
+      - name: delay_risk_level
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+
+  - name: stg_promotions
+    description: "Cleaned promotion dimension with promotion timing, discount level, category, and channel."
+    columns:
+      - name: promotion_id
+        tests:
+          - not_null
+          - unique
+      - name: promotion_type
+        tests:
+          - not_null
+      - name: discount_pct
+        tests:
+          - not_null
+      - name: start_date
+        tests:
+          - not_null
+      - name: end_date
+        tests:
+          - not_null
+      - name: discount_band
+        tests:
+          - not_null
+
+  - name: stg_sales
+    description: "Cleaned sales fact table with revenue, margin, markdown, and transaction fields."
+    columns:
+      - name: sales_id
+        tests:
+          - not_null
+          - unique
+      - name: transaction_id
+        tests:
+          - not_null
+      - name: date_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_calendar')
+                field: date_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: channel
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Store', 'Online', 'Drive Up', 'Same-Day Delivery']
+      - name: quantity_sold
+        tests:
+          - not_null
+      - name: net_sales_revenue
+        tests:
+          - not_null
+      - name: gross_margin
+        tests:
+          - not_null
+
+  - name: stg_returns
+    description: "Cleaned returns fact table linked to sales, products, stores, and return reasons."
+    columns:
+      - name: return_id
+        tests:
+          - not_null
+          - unique
+      - name: sales_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sales')
+                field: sales_id
+      - name: date_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_calendar')
+                field: date_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: returned_units
+        tests:
+          - not_null
+      - name: refund_amount
+        tests:
+          - not_null
+      - name: return_condition
+        tests:
+          - not_null
+
+  - name: stg_shrink_events
+    description: "Cleaned shrink event fact table for theft, damage, miscount, spoilage, and inventory loss."
+    columns:
+      - name: shrink_event_id
+        tests:
+          - not_null
+          - unique
+      - name: date_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_calendar')
+                field: date_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: shrink_reason
+        tests:
+          - not_null
+      - name: shrink_units
+        tests:
+          - not_null
+      - name: estimated_shrink_value
+        tests:
+          - not_null
+
+  - name: stg_purchase_orders
+    description: "Cleaned purchase order fact table with supplier, product, store, ordered units, cost, and status."
+    columns:
+      - name: po_line_id
+        tests:
+          - not_null
+          - unique
+      - name: purchase_order_id
+        tests:
+          - not_null
+      - name: supplier_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_suppliers')
+                field: supplier_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: order_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Delivered', 'Cancelled', 'Open']
+      - name: ordered_units
+        tests:
+          - not_null
+      - name: ordered_cost
+        tests:
+          - not_null
+
+  - name: stg_shipments
+    description: "Cleaned shipment fact table with delivery timing, delays, shipped units, delivered units, and short-shipment flags."
+    columns:
+      - name: shipment_id
+        tests:
+          - not_null
+          - unique
+      - name: purchase_order_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_purchase_orders')
+                field: purchase_order_id
+      - name: supplier_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_suppliers')
+                field: supplier_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: shipped_units
+        tests:
+          - not_null
+      - name: delivered_units
+        tests:
+          - not_null
+      - name: delayed_flag
+        tests:
+          - not_null
+      - name: delay_days
+        tests:
+          - not_null
+
+  - name: stg_inventory_snapshots
+    description: "Cleaned weekly store-product inventory snapshot table with stockout, overstock, sell-through, and inventory value fields."
+    columns:
+      - name: inventory_snapshot_id
+        tests:
+          - not_null
+          - unique
+      - name: date_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_calendar')
+                field: date_id
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: beginning_inventory_units
+        tests:
+          - not_null
+      - name: ending_inventory_units
+        tests:
+          - not_null
+      - name: received_units
+        tests:
+          - not_null
+      - name: sold_units
+        tests:
+          - not_null
+      - name: returned_units
+        tests:
+          - not_null
+      - name: shrink_units
+        tests:
+          - not_null
+      - name: stockout_flag
+        tests:
+          - not_null
+      - name: overstock_flag
+        tests:
+          - not_null
+      - name: inventory_value
+        tests:
+          - not_null

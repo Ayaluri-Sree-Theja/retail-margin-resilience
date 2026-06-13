@@ -1,0 +1,326 @@
+version: 2
+
+models:
+  - name: mart_executive_margin_resilience
+    description: "Executive quarterly KPI mart for margin resilience, returns, shrink, inventory risk, fulfillment delays, and margin-at-risk."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: fiscal_quarter
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+      - name: total_transactions
+        tests:
+          - not_null
+
+      - name: units_sold
+        tests:
+          - not_null
+
+      - name: net_sales_revenue
+        tests:
+          - not_null
+
+      - name: gross_margin
+        tests:
+          - not_null
+
+      - name: gross_margin_rate
+        tests:
+          - not_null
+
+      - name: return_adjusted_revenue
+        tests:
+          - not_null
+
+      - name: shrink_adjusted_margin
+        tests:
+          - not_null
+
+      - name: margin_at_risk
+        tests:
+          - not_null
+
+  - name: mart_inventory_health
+    description: "Weekly inventory health mart by fiscal week, region, store format, and category."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: fiscal_week
+        tests:
+          - not_null
+
+      - name: snapshot_date
+        tests:
+          - not_null
+
+      - name: region
+        tests:
+          - not_null
+
+      - name: store_format
+        tests:
+          - not_null
+
+      - name: category
+        tests:
+          - not_null
+
+      - name: snapshot_count
+        tests:
+          - not_null
+
+      - name: sold_units
+        tests:
+          - not_null
+
+      - name: ending_inventory_units
+        tests:
+          - not_null
+
+      - name: avg_inventory_value
+        tests:
+          - not_null
+
+      - name: stockout_rate
+        tests:
+          - not_null
+
+      - name: overstock_rate
+        tests:
+          - not_null
+
+  - name: mart_return_shrink_leakage
+    description: "Quarterly category-level mart for return leakage, shrink leakage, refund value, shrink value, and adjusted margin."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: fiscal_quarter
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+      - name: category
+        tests:
+          - not_null
+
+      - name: units_sold
+        tests:
+          - not_null
+
+      - name: net_sales_revenue
+        tests:
+          - not_null
+
+      - name: gross_margin
+        tests:
+          - not_null
+
+      - name: refund_amount
+        tests:
+          - not_null
+
+      - name: shrink_value
+        tests:
+          - not_null
+
+      - name: return_shrink_leakage_value
+        tests:
+          - not_null
+
+  - name: mart_fulfillment_reliability
+    description: "Weekly fulfillment reliability mart by supplier region, supplier risk, reliability band, and category."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: fiscal_quarter
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+      - name: fiscal_week
+        tests:
+          - not_null
+
+      - name: supplier_region
+        tests:
+          - not_null
+
+      - name: delay_risk_level
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+
+      - name: supplier_reliability_band
+        tests:
+          - not_null
+
+      - name: category
+        tests:
+          - not_null
+
+      - name: shipment_count
+        tests:
+          - not_null
+
+      - name: delay_rate
+        tests:
+          - not_null
+
+      - name: on_time_delivery_rate
+        tests:
+          - not_null
+
+      - name: avg_delay_days
+        tests:
+          - not_null
+
+  - name: mart_store_category_profitability
+    description: "Annual store-category profitability mart with revenue, margin, markdown, return, shrink, and margin-at-risk metrics."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: region
+        tests:
+          - not_null
+
+      - name: store_id
+        tests:
+          - not_null
+
+      - name: store_name
+        tests:
+          - not_null
+
+      - name: store_format
+        tests:
+          - not_null
+
+      - name: category
+        tests:
+          - not_null
+
+      - name: transactions
+        tests:
+          - not_null
+
+      - name: units_sold
+        tests:
+          - not_null
+
+      - name: net_sales_revenue
+        tests:
+          - not_null
+
+      - name: gross_margin
+        tests:
+          - not_null
+
+      - name: gross_margin_rate
+        tests:
+          - not_null
+
+      - name: margin_at_risk
+        tests:
+          - not_null
+
+  - name: mart_supplier_performance
+    description: "Quarterly supplier performance mart with shipment volume, delay rate, short shipment rate, lead time, and supplier status."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [2023, 2024, 2025]
+
+      - name: fiscal_quarter
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+      - name: supplier_id
+        tests:
+          - not_null
+
+      - name: supplier_name
+        tests:
+          - not_null
+
+      - name: supplier_region
+        tests:
+          - not_null
+
+      - name: delay_risk_level
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Low', 'Medium', 'High']
+
+      - name: supplier_reliability_band
+        tests:
+          - not_null
+
+      - name: category
+        tests:
+          - not_null
+
+      - name: shipment_count
+        tests:
+          - not_null
+
+      - name: delay_rate
+        tests:
+          - not_null
+
+      - name: short_shipment_rate
+        tests:
+          - not_null
+
+      - name: supplier_performance_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'High Delay Concern'
+                  - 'Moderate Delay Concern'
+                  - 'Reliable'

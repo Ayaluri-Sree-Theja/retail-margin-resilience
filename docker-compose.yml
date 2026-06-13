@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: retail_margin_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: retail_margin_resilience
+      POSTGRES_USER: retail_admin
+      POSTGRES_PASSWORD: retail_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - retail_postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retail_admin -d retail_margin_resilience"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  retail_postgres_data:
