@@ -4,13 +4,17 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
-# Environment
+# Environment and secrets
 .env
 .env.*
+.streamlit/secrets.toml
+profiles.yml
+dbt_retail/profiles.yml
 
 # Logs and temporary outputs
 *.log
 project_structure_audit.txt
+audit_project_structure.py
 
 # Data outputs
 data/raw/*.csv
@@ -25,7 +29,7 @@ data/exports/*
 # MLflow outputs
 mlruns/
 
-# dbt
+# dbt generated files
 dbt_retail/target/
 dbt_retail/logs/
 dbt_retail/dbt_packages/
