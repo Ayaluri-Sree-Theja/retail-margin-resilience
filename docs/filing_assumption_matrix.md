@@ -1,48 +1,353 @@
 # Filing Assumption Matrix
 
-## Purpose
+This document explains how public-company research was translated into synthetic data assumptions for the Retail Margin Resilience Analytics project.
 
-This document connects Target Corporation's public annual report disclosures to the assumptions used in the Retail Margin Resilience Analytics project.
-
-The goal is not to recreate Target's internal data. The goal is to use public filing evidence to design a realistic simulated retail dataset and analytics system.
-
-## Source Documents
-
-- Target Corporation 2025 Annual Report / Form 10-K
-- Target Corporation 2024 Annual Report / Form 10-K
-- Target Corporation 2023 Annual Report / Form 10-K
-
-## Data Disclaimer
-
-This project does not use Target internal operational data.
-
-All store-SKU sales, inventory, returns, shrink, supplier, shipment, promotion, forecast, and risk-score data are simulated.
-
-Target's public filings are used only to inform:
-
-- business context
-- risk themes
-- synthetic data assumptions
-- KPI design
-- dashboard narrative
-- AI/RAG source grounding
+Target Corporation is used as the public-company reference for business context. The operational dataset in this repository is simulated and does **not** represent Target's internal data.
 
 ---
 
-## Assumption Matrix
+## Purpose
 
-| Filing Theme | Filing-Informed Evidence | Business Interpretation | Synthetic Data Rule | Affected Tables | Affected KPIs | Dashboard Page |
-|---|---|---|---|---|---|---|
-| Gross margin pressure | Target reported gross margin rate movement across 2023, 2024, and 2025. | Margin performance changes over time and can be affected by merchandise mix, markdowns, shrink, and fulfillment costs. | Generate product categories with different margin rates. Add margin pressure through promotions, markdowns, returns, shrink, and supplier delays. | fact_sales, fact_return, fact_shrink_event, fact_inventory_snapshot | gross_margin, gross_margin_rate, return_adjusted_margin, shrink_adjusted_margin, margin_at_risk | Executive Overview |
-| Demand volatility | Target discusses variability in operating results and changes in consumer demand across recent years. | Retail demand should vary by season, category, channel, and macro-like pressure. | Add demand seasonality, category demand cycles, holiday spikes, back-to-school spikes, and weaker discretionary demand periods. | fact_sales, fact_inventory_snapshot, ml_demand_forecast | forecasted_units, forecast_error, demand_volatility_score, stockout_rate | Inventory Resilience, ML Risk Intelligence |
-| Strong in-stocks | Target's 2025 CEO letter emphasizes sharp pricing, strong in-stocks, and fast fulfillment. | Product availability is a core guest experience and profitability driver. | Generate stockout flags when demand exceeds inventory and replenishment is delayed. | fact_inventory_snapshot, fact_sales, fact_purchase_order, fact_shipment | stockout_rate, weeks_of_supply, order_fill_rate, estimated_stockout_margin_loss | Inventory Resilience |
-| Fast fulfillment | Target emphasizes fast fulfillment and end-to-end reliability. | Fulfillment speed and reliability affect availability, customer experience, and cost pressure. | Generate supplier lead times, delayed shipments, delivery dates, and delay days. | fact_purchase_order, fact_shipment, dim_supplier | on_time_delivery_rate, fulfillment_delay_rate, average_lead_time, lead_time_variance | Fulfillment & Supplier Reliability |
-| Inventory shrink | Target reports that inventory is reduced for estimated losses related to shrink and markdowns. | Shrink is a measurable profit leakage factor. | Generate shrink events with higher probability for small, high-value, high-risk SKUs and selected store risk profiles. | fact_shrink_event, fact_inventory_snapshot, dim_product, dim_store | shrink_units, shrink_value, shrink_rate, shrink_adjusted_margin | Returns & Shrink Leakage |
-| Markdowns | Target discusses markdowns as part of inventory and gross margin management. | Overstock and weak sell-through can lead to markdown exposure. | Generate promotions and markdown-like discounts when products have high inventory and low sell-through. | fact_sales, dim_promotion, fact_inventory_snapshot | markdown_loss, markdown_exposure, sell_through_rate, overstock_units | Inventory Resilience |
-| Category mix | Target reports merchandise sales across categories and notes that gross margins vary by merchandise type. | Category mix affects revenue and margin performance. | Use Target-like categories and assign category-specific price, cost, return risk, shrink risk, and margin assumptions. | dim_product, fact_sales, fact_return, fact_shrink_event | category_margin_rate, category_return_rate, category_shrink_rate | Executive Overview, Store Category Profitability |
-| Holiday seasonality | Target states that a larger share of annual sales occurs in Q4 because of November and December holiday sales. | Retail demand should spike in holiday periods. | Add higher demand multipliers in November and December, with category-specific holiday effects. | dim_calendar, fact_sales, fact_inventory_snapshot | monthly_sales, holiday_sales_mix, forecast_error | Executive Overview, ML Risk Intelligence |
-| Store footprint | Target reports store counts and retail square footage across years. | Store format and size should influence demand, inventory, and fulfillment behavior. | Simulate stores with different formats, square footage, regions, risk profiles, and fulfillment flags. | dim_store, fact_sales, fact_inventory_snapshot, fact_shipment | sales_per_store, sales_per_sqft_proxy, fulfillment_delay_rate | Executive Overview |
-| Supply chain scale | Target reports supply chain facilities and ongoing investment in supply chain and operations. | Supply chain reliability is part of margin resilience. | Generate suppliers with reliability scores, lead times, delay risk levels, and shipment performance. | dim_supplier, fact_purchase_order, fact_shipment | supplier_reliability_score, delay_rate, lead_time_variance | Fulfillment & Supplier Reliability |
-| Digital / omnichannel growth | Target discusses digital channels, same-day services, and stores supporting fulfillment. | Channel mix affects fulfillment, returns, and inventory behavior. | Generate store, online, drive-up, and same-day delivery sales channels with different return and delay patterns. | fact_sales, fact_return, fact_shipment | channel_sales_mix, channel_return_rate, fulfillment_delay_rate | Executive Overview, Returns & Shrink Leakage |
-| Returns leakage | Retail returns reduce realized revenue and margin even when gross sales look healthy. | Return behavior should vary by category and channel. | Generate higher returns for apparel, home, and online channels; lower returns for grocery and essentials. | fact_return, fact_sales, dim_product | return_rate, return_value, return_adjusted_revenue, return_adjusted_margin | Returns & Shrink Leakage |
-| 2023 53-week year | Target notes that 2023 had 53 weeks while 2024 and 2025 had 52 weeks. | The calendar model must handle fiscal year differences. | Generate FY2023 with 53 weeks and FY2024/FY2025 with 52 weeks. | dim_calendar, fact_sales, fact_inventory_snapshot, ml_demand_forecast | fiscal_year_sales, weekly_sales_trend, forecast_baseline | Executive Overview |
+The purpose of this matrix is to separate:
+
+1. what came from public research,
+2. how it was interpreted as a business theme,
+3. how that theme became a synthetic data assumption,
+4. where the assumption appears in the final analytics project.
+
+This document is included to make the project transparent and portfolio-safe.
+
+---
+
+## Source boundary
+
+Public filings and investor materials were used only for business context.
+
+They were **not** used to extract actual:
+
+* store-level transactions,
+* SKU-level performance,
+* supplier-level performance,
+* return records,
+* shrink events,
+* inventory snapshots,
+* fulfillment records,
+* internal operating metrics.
+
+All operational data in this project is synthetic.
+
+---
+
+## Public source files used
+
+The repository includes the following public annual report PDFs for business context:
+
+```text
+docs/sources/2023-Annual-Report-Target-Corporation.pdf
+docs/sources/2024-Annual-Report-Target-Corporation.pdf
+docs/sources/target_2025_annual_report.pdf
+```
+
+These files support business framing only.
+
+---
+
+# Assumption Matrix
+
+## 1. Margin pressure
+
+| Item                    | Description                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Large retailers must protect profitability while managing pricing, promotions, costs, and operational leakage.        |
+| Project interpretation  | Margin should be analyzed beyond simple sales and revenue.                                                            |
+| Synthetic assumption    | Sales transactions include unit price, unit cost, discounts, net sales revenue, cost of goods sold, and gross margin. |
+| Generated data affected | `fact_sales`                                                                                                          |
+| dbt models affected     | `stg_sales`, `int_sales_enriched`, `mart_executive_margin_resilience`, `mart_store_category_profitability`            |
+| Metrics affected        | Net sales revenue, gross margin amount, gross margin rate, markdown loss, margin-at-risk, margin risk rate            |
+| Dashboard use           | Executive Margin Resilience, Store & Category Profitability, Predictive Risk Intelligence                             |
+| ML use                  | Gross margin rate, margin risk rate, markdown loss rate                                                               |
+| Limitation              | Synthetic margins are modeled for portfolio realism and do not represent Target's actual margin structure.            |
+
+---
+
+## 2. Markdown and discount exposure
+
+| Item                    | Description                                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Retailers often use promotions and markdowns to manage demand, inventory, and price competitiveness.                         |
+| Project interpretation  | Markdown pressure should be included as one source of margin-risk.                                                           |
+| Synthetic assumption    | Promotions and discounts are assigned to a portion of sales transactions.                                                    |
+| Generated data affected | `dim_promotion`, `fact_sales`                                                                                                |
+| dbt models affected     | `stg_promotions`, `stg_sales`, `int_sales_enriched`, `mart_executive_margin_resilience`, `mart_store_category_profitability` |
+| Metrics affected        | Discount amount, markdown loss, markdown loss rate, margin-at-risk                                                           |
+| Dashboard use           | Executive Margin Resilience, Store & Category Profitability                                                                  |
+| ML use                  | Markdown loss rate                                                                                                           |
+| Simulator use           | Manual lever and leakage reduction scenario                                                                                  |
+| Limitation              | Markdown behavior is simulated and not calibrated to actual Target promotional events.                                       |
+
+---
+
+## 3. Inventory productivity
+
+| Item                    | Description                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Inventory levels affect sales availability, markdown exposure, working capital, and operational efficiency.       |
+| Project interpretation  | Inventory health should be analyzed through both shortage and excess conditions.                                  |
+| Synthetic assumption    | Weekly inventory snapshots are generated by store and product.                                                    |
+| Generated data affected | `fact_inventory_snapshot`                                                                                         |
+| dbt models affected     | `stg_inventory_snapshots`, `int_inventory_enriched`, `mart_inventory_health`                                      |
+| Metrics affected        | Ending inventory units, ending inventory value, stockout rate, overstock rate, weeks of supply, sell-through rate |
+| Dashboard use           | Inventory Health, Executive Action Summary                                                                        |
+| ML use                  | Inventory stockout rate, inventory overstock rate, average weeks of supply, inventory sell-through rate           |
+| Simulator use           | Inventory recovery scenario and operational stress test                                                           |
+| Limitation              | Inventory thresholds are synthetic and designed for analytical demonstration.                                     |
+
+---
+
+## 4. Stockout exposure
+
+| Item                    | Description                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Product unavailability can reduce sales opportunity and weaken customer experience.                     |
+| Project interpretation  | Stockouts should be treated as a margin-resilience risk, not only an inventory metric.                  |
+| Synthetic assumption    | Store-product-week records can be flagged as stockout snapshots when inventory falls below a threshold. |
+| Generated data affected | `fact_inventory_snapshot`                                                                               |
+| dbt models affected     | `int_inventory_enriched`, `mart_inventory_health`, `mart_store_category_profitability`                  |
+| Metrics affected        | Stockout snapshots, stockout rate                                                                       |
+| Dashboard use           | Inventory Health, Predictive Risk Intelligence                                                          |
+| ML use                  | Inventory stockout rate                                                                                 |
+| Simulator use           | Inventory recovery scenario, operational stress test                                                    |
+| Limitation              | Stockout flags are simulated from generated inventory positions and demand assumptions.                 |
+
+---
+
+## 5. Overstock exposure
+
+| Item                    | Description                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Excess inventory can create markdown pressure and reduce inventory productivity.                     |
+| Project interpretation  | Overstock should be connected to margin-risk because excess supply can lead to discounting.          |
+| Synthetic assumption    | Store-product-week records can be flagged as overstock snapshots when inventory exceeds a threshold. |
+| Generated data affected | `fact_inventory_snapshot`                                                                            |
+| dbt models affected     | `int_inventory_enriched`, `mart_inventory_health`, `mart_store_category_profitability`               |
+| Metrics affected        | Overstock snapshots, overstock rate, average inventory value, weeks of supply                        |
+| Dashboard use           | Inventory Health, Executive Action Summary                                                           |
+| ML use                  | Inventory overstock rate, average weeks of supply, average inventory value                           |
+| Simulator use           | Inventory recovery scenario, operational stress test                                                 |
+| Limitation              | Overstock logic is synthetic and does not represent actual Target planning thresholds.               |
+
+---
+
+## 6. Returns leakage
+
+| Item                    | Description                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Returns can reduce realized revenue and create operational handling costs or markdown pressure.          |
+| Project interpretation  | Refunds should be treated as a measurable leakage path.                                                  |
+| Synthetic assumption    | Return events are generated from sales activity using product, category, channel, and risk assumptions.  |
+| Generated data affected | `fact_return`                                                                                            |
+| dbt models affected     | `stg_returns`, `int_returns_enriched`, `mart_return_shrink_leakage`, `mart_store_category_profitability` |
+| Metrics affected        | Returned units, refund amount, return rate, refund value rate                                            |
+| Dashboard use           | Returns & Shrink Leakage, Store & Category Profitability                                                 |
+| ML use                  | Refund value rate                                                                                        |
+| Simulator use           | Return reduction scenario, leakage reduction scenario                                                    |
+| Limitation              | Return reasons and rates are simulated and should not be interpreted as actual company behavior.         |
+
+---
+
+## 7. Shrink exposure
+
+| Item                    | Description                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Shrink is a retail operating risk that can reduce inventory value and profitability.                          |
+| Project interpretation  | Shrink should be modeled as an operational loss and included in margin-risk.                                  |
+| Synthetic assumption    | Shrink events are generated by store, product, reason, units, and estimated value.                            |
+| Generated data affected | `fact_shrink_event`                                                                                           |
+| dbt models affected     | `stg_shrink_events`, `int_shrink_enriched`, `mart_return_shrink_leakage`, `mart_store_category_profitability` |
+| Metrics affected        | Shrink units, shrink value, shrink value rate, investigation flag                                             |
+| Dashboard use           | Returns & Shrink Leakage, Executive Action Summary                                                            |
+| ML use                  | Shrink value rate                                                                                             |
+| Simulator use           | Leakage reduction scenario, operational stress test                                                           |
+| Limitation              | Shrink reasons and values are simulated for analytics demonstration only.                                     |
+
+---
+
+## 8. Supplier reliability
+
+| Item                    | Description                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Public-company theme    | Retail operations depend on reliable supplier replenishment and timely product flow.                               |
+| Project interpretation  | Supplier performance should be connected to inventory and fulfillment risk.                                        |
+| Synthetic assumption    | Suppliers are assigned reliability patterns that affect purchase orders and shipments.                             |
+| Generated data affected | `dim_supplier`, `fact_purchase_order`, `fact_shipment`                                                             |
+| dbt models affected     | `stg_suppliers`, `stg_purchase_orders`, `stg_shipments`, `int_fulfillment_enriched`, `mart_supplier_performance`   |
+| Metrics affected        | Ordered units, shipped units, delivered units, supplier fill rate, supplier delay rate, supplier average lead time |
+| Dashboard use           | Supplier Performance, Fulfillment Reliability                                                                      |
+| ML use                  | Supplier average lead time days, supplier delay rate, supplier fill rate                                           |
+| Simulator use           | Supply chain improvement scenario, operational stress test                                                         |
+| Limitation              | Supplier reliability tiers are synthetic and not based on actual vendor performance.                               |
+
+---
+
+## 9. Fulfillment reliability
+
+| Item                    | Description                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Fulfillment delays can affect customer experience, availability, and operational performance.                 |
+| Project interpretation  | Fulfillment delay should be modeled as a risk signal that can contribute to margin pressure.                  |
+| Synthetic assumption    | Shipments include expected delivery dates, actual delivery dates, delay days, and short-shipment flags.       |
+| Generated data affected | `fact_shipment`                                                                                               |
+| dbt models affected     | `stg_shipments`, `int_fulfillment_enriched`, `mart_fulfillment_reliability`                                   |
+| Metrics affected        | Shipment count, delayed shipments, delay rate, average delay days, fulfillment lead time, short shipment rate |
+| Dashboard use           | Fulfillment Reliability, Supplier Performance                                                                 |
+| ML use                  | Fulfillment average lead time days, fulfillment delay rate                                                    |
+| Simulator use           | Supply chain improvement scenario, operational stress test                                                    |
+| Limitation              | Fulfillment records are simulated and do not reflect actual logistics events.                                 |
+
+---
+
+## 10. Store-level variation
+
+| Item                    | Description                                                                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Retail performance varies by location because of demand, customer behavior, inventory execution, shrink exposure, and local operations. |
+| Project interpretation  | Store-level risk profiles should create realistic variation across the synthetic network.                                               |
+| Synthetic assumption    | Stores are assigned risk profiles that influence shrink, returns, inventory pressure, and margin-risk.                                  |
+| Generated data affected | `dim_store`, all major fact tables                                                                                                      |
+| dbt models affected     | All store-level staging, intermediate, and mart models                                                                                  |
+| Metrics affected        | Store-level sales, margin, leakage, inventory, fulfillment, and predicted risk metrics                                                  |
+| Dashboard use           | Store & Category Profitability, Inventory Health, Predictive Risk Intelligence                                                          |
+| ML use                  | Store-category-year feature records                                                                                                     |
+| Limitation              | Store risk profiles are synthetic and not based on actual store performance.                                                            |
+
+---
+
+## 11. Category-level variation
+
+| Item                    | Description                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Retail categories behave differently in terms of margin, returns, shrink, inventory velocity, and promotion exposure. |
+| Project interpretation  | Category should be a core analysis dimension.                                                                         |
+| Synthetic assumption    | Product categories are assigned different cost, price, return, shrink, and demand behavior assumptions.               |
+| Generated data affected | `dim_product`, all product-linked fact tables                                                                         |
+| dbt models affected     | Product, sales, returns, shrink, inventory, and profitability models                                                  |
+| Metrics affected        | Category sales, gross margin, leakage, inventory health, predicted risk                                               |
+| Dashboard use           | All major analytical pages                                                                                            |
+| ML use                  | Category-level features and one-hot encoded category signals                                                          |
+| Simulator use           | Category filter and store-category selection                                                                          |
+| Limitation              | Category behaviors are simulated for analytical variety.                                                              |
+
+---
+
+## 12. Executive prioritization
+
+| Item                    | Description                                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Public-company theme    | Leaders need to prioritize action across many stores, categories, suppliers, and operational risks.                          |
+| Project interpretation  | The project should combine risk intensity with business value exposure.                                                      |
+| Synthetic assumption    | Marts include both percentage-based risk metrics and volume/value metrics.                                                   |
+| Generated data affected | All major fact tables                                                                                                        |
+| dbt models affected     | Executive, profitability, inventory, leakage, fulfillment, and supplier marts                                                |
+| Metrics affected        | Revenue exposed, margin-at-risk, risk rate, average inventory value, predicted risk probability                              |
+| Dashboard use           | Executive Action Summary, Predictive Risk Intelligence                                                                       |
+| ML use                  | Predicted probability and risk banding                                                                                       |
+| Simulator use           | Scenario selection and interpretation                                                                                        |
+| Limitation              | Priority logic is designed for portfolio decision-support demonstration and is not an official Target prioritization method. |
+
+---
+
+# ML Assumption Translation
+
+## Early-warning prediction
+
+| Item                    | Description                                                                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Business theme          | Retailers benefit from identifying risk before it appears as next-year margin pressure.                     |
+| Project interpretation  | Use current-year operating features to predict next-year high margin-risk.                                  |
+| ML target               | `high_margin_risk_next_year`                                                                                |
+| Target definition       | 1 if next-year margin risk rate is greater than or equal to the synthetic P75 threshold                     |
+| Feature grain           | Store-category-fiscal year                                                                                  |
+| Final model             | Logistic Regression                                                                                         |
+| Reason for model choice | Interpretability and deployment simplicity                                                                  |
+| Limitation              | The model predicts synthetic risk labels and should not be interpreted as a real-company forecasting model. |
+
+---
+
+## Model threshold assumption
+
+| Item                     | Description                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Business theme           | Missing a high-risk case may be costly in retail operations.                            |
+| Project interpretation   | Prioritize recall for early warning.                                                    |
+| Final decision threshold | 39.3%                                                                                   |
+| Final recall             | 94.9%                                                                                   |
+| Final precision          | 57.8%                                                                                   |
+| Limitation               | Threshold is chosen for this synthetic case study and is not a universal business rule. |
+
+---
+
+# Streamlit Scenario Assumption Translation
+
+## Scenario presets
+
+| Scenario                 | Business meaning                                           | Main levers changed                                      |
+| ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
+| Inventory recovery       | Improve inventory balance and reduce availability pressure | Stockout rate, overstock rate, weeks of supply           |
+| Return reduction         | Reduce refund leakage                                      | Refund value rate, markdown loss rate                    |
+| Leakage reduction        | Reduce markdown, refund, and shrink pressure together      | Markdown loss rate, refund value rate, shrink value rate |
+| Supply chain improvement | Improve lead time and replenishment reliability            | Supplier lead time, fulfillment lead time                |
+| Operational stress test  | Simulate worsening operational pressure                    | Stockout, overstock, refund, shrink, markdown, lead time |
+| Custom scenario          | Manual user-defined sensitivity test                       | User-selected levers                                     |
+
+---
+
+## Scenario interpretation boundary
+
+The simulator is designed for sensitivity analysis.
+
+It does **not** claim that changing a lever will directly cause the predicted outcome in the real world.
+
+The correct interpretation is:
+
+```text
+If a selected store-category had these improved or worsened operational conditions, the trained model would estimate this revised level of next-year high margin-risk.
+```
+
+---
+
+# Final Assumption Boundary
+
+## What public filings influenced
+
+Public filings and investor materials influenced:
+
+* the business question,
+* the importance of margin protection,
+* the importance of inventory productivity,
+* the inclusion of returns and shrink,
+* the inclusion of supplier and fulfillment reliability,
+* the executive decision-support framing.
+
+## What public filings did not provide
+
+Public filings did **not** provide:
+
+* synthetic row-level data,
+* actual Target store data,
+* actual Target SKU data,
+* actual Target return data,
+* actual Target shrink data,
+* actual Target supplier data,
+* actual Target inventory snapshots,
+* actual model labels,
+* actual Streamlit simulator inputs.
+
+---
+
+# Summary
+
+This matrix documents the bridge from public-company business research to synthetic project design.
+
+The public materials gave the project a realistic retail context.
+
+The actual analytics platform is built from synthetic data, generated assumptions, dbt transformations, Power BI dashboards, machine learning outputs, and a deployed Streamlit simulator.
