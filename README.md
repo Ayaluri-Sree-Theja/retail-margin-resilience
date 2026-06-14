@@ -303,7 +303,7 @@ powerbi/Retail_Margin_Resilience_Dashboard.pbix
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/retail-margin-resilience.git
+git clone https://github.com/Ayaluri-Sree-Theja/retail-margin-resilience.git
 cd retail-margin-resilience
 ```
 
