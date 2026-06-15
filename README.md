@@ -90,6 +90,30 @@ Example scenario types:
 
 ---
 
+## Project Screenshots
+
+### Power BI Executive Action Summary
+
+![Executive Action Summary](assets/screenshots/powerbi/01_executive_action_summary.png)
+
+### Power BI Executive Margin Resilience
+
+![Executive Margin Resilience](assets/screenshots/powerbi/02_executive_margin_resilience.png)
+
+### Power BI Predictive Risk Intelligence
+
+![Predictive Risk Intelligence](assets/screenshots/powerbi/05_predictive_risk_intelligence.png)
+
+### Streamlit Inventory Recovery Scenario
+
+![Streamlit Inventory Recovery Scenario](assets/screenshots/streamlit/02_inventory_recovery_scenario.png)
+
+### Streamlit Model Governance
+
+![Streamlit Model Governance](assets/screenshots/streamlit/04_model_governance.png)
+
+---
+
 ## Repository Structure
 
 ```text
@@ -98,6 +122,11 @@ retail-margin-resilience/
 ├── README.md
 ├── requirements.txt
 ├── docker-compose.yml
+│
+├── assets/
+│   └── screenshots/
+│       ├── powerbi/
+│       └── streamlit/
 │
 ├── streamlit_app/
 │   └── app.py
@@ -195,6 +224,21 @@ Definitions are documented in `docs/metric_definitions.md`.
 
 ---
 
+## dbt Mart Layer
+
+The final dbt mart layer includes:
+
+* `mart_executive_margin_resilience`
+* `mart_inventory_health`
+* `mart_return_shrink_leakage`
+* `mart_fulfillment_reliability`
+* `mart_store_category_profitability`
+* `mart_supplier_performance`
+
+These marts support the Power BI dashboard and the machine learning feature engineering layer.
+
+---
+
 ## Machine Learning Layer
 
 The ML layer predicts whether a store-category combination is likely to become high margin-risk in the following fiscal year.
@@ -215,8 +259,9 @@ The model uses historical operational signals such as:
 Model summary:
 
 * Model type: Logistic regression
-* Objective: early warning detection of next-year high margin-risk
+* Objective: early-warning detection of next-year high margin-risk
 * Split strategy: train on FY2023, test on FY2024
+* Scoring period: FY2025
 * Decision threshold: 39.3%
 * Precision: 57.8%
 * Recall: 94.9%
@@ -289,7 +334,7 @@ powerbi/Retail_Margin_Resilience_Dashboard.pbix
 * scikit-learn
 * joblib
 * PostgreSQL
-* dbt
+* dbt Core
 * SQL
 * Power BI
 * Streamlit
@@ -307,10 +352,24 @@ git clone https://github.com/Ayaluri-Sree-Theja/retail-margin-resilience.git
 cd retail-margin-resilience
 ```
 
-Create and activate a virtual environment:
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
+```
+
+Activate the environment.
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
 ```
 
 Install dependencies:
